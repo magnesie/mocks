@@ -3,7 +3,7 @@ const casual = require('casual')
 const jsonServer = require('json-server')
 const server = jsonServer.create()
 const middlewares = jsonServer.defaults()
-const port = 8080
+const port = 7880
 
 server.use(jsonServer.bodyParser)
 server.use(middlewares)
