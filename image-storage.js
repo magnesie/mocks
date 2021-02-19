@@ -8,11 +8,28 @@ const port = 7880
 server.use(jsonServer.bodyParser)
 server.use(middlewares)
 
+function generate_photos(min, max){
+	let photos = []
+	if (min < 0 || max < min) {
+		return photos
+	}
+
+	min = Math.ceil(min)
+	max = Math.floor(max)
+	photos_count = Math.floor(Math.random() * (max - min + 1)) + min;
+
+	for(let i = 0; i < photos_count; i++) {
+		photos.push(casual.domain + '/' + casual.word + '.jpeg')
+	}
+
+	return photos
+}
+
 casual.register_provider({
     submission: () => {
         return {
-            id: casual.integer(from = 1, to = 10),
-            photos: [casual.url, casual.url, casual.url],
+            id: casual.integer(from = 1, to = 256),
+            photos: generate_photos(8, 64),
             submission_date: casual.date(format = 'YYYY-MM-DD') + 'T' + casual.time(format = 'hh:mm:ss.sssZ'),
         }
     }
@@ -22,7 +39,7 @@ server.get('/new_submissions', (request, response) => {
     if (request.method === 'GET') {
         const submissions = []
 
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < Math.floor(Math.random() * (5 + 1)) ; i++) {
             submissions.push(casual.submission)
         }
 
