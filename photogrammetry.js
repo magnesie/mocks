@@ -92,7 +92,7 @@ const start_job = (photos, callback, ip) => {
     let job = casual.photogrammetry_job
     jobs.push(job);
 
-    const job_duration = ((Math.floor(Math.random() * (10 + 1)) + 1) * 1000);
+    const job_duration = photos.length * 100
 
     setTimeout(() => {
         for (let i in jobs) {
