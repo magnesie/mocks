@@ -1,4 +1,5 @@
 const casual = require('casual')
+const http = require('http')
 
 const jsonServer = require('json-server')
 const server = jsonServer.create()
@@ -7,11 +8,13 @@ const port = 7879
 
 server.use(jsonServer.bodyParser)
 server.use(middlewares)
-
+server.set('trust proxy', true)
 
 casual.register_provider({
     photogrammetry_job: () => {
         return {
+            id: casual.uuid,
+            status: 'InProgress'
         }
     }
 })
@@ -41,6 +44,80 @@ server.post('/change_submission_status', (request, response) => {
     }
 });*/
 
-server.listen(port, () => {
+
+server.post('/job', (request, response) => {
+    if (request.method === 'POST') {
+        let photos = request.body['photos']
+        let callback = request.body['callback']
+        if (Array.isArray(photos) && photos.length > 0 && callback != null) {
+            const uuid = casual.uuid
+            response.status(200).jsonp({ id: start_job(photos, callback, request.ip) })
+
+
+        } else {
+            console.log(photos)
+            console.log(callback)
+            response.status(400).jsonp()
+        }
+    }
+});
+
+server.get('/job/:id', (request, response) => {
+    if (request.method === 'GET') {
+        const id = request.params['id']
+
+        let job = undefined;
+
+        for (let i in jobs) {
+            if (jobs[i].id == id) {
+                job = jobs[i];
+                break;
+            }
+        }
+
+        if (job != null) {
+            response.status(200).jsonp(job)
+        } else {
+            response.status(400).jsonp()
+        }
+    }
+})
+
+server.listen(port, '0.0.0.0', () => {
     console.log('Photogrammetry API mock is running')
 })
+
+let jobs = [];
+const start_job = (photos, callback, ip) => {
+    let job = casual.photogrammetry_job
+    jobs.push(job);
+
+    const job_duration = ((Math.floor(Math.random() * (10 + 1)) + 1) * 1000);
+
+    setTimeout(() => {
+        for (let i in jobs) {
+            if (jobs[i].id == job.id) {
+                jobs[i].status = 'Finished';
+                break;
+            }
+        }
+        console.log(jobs);
+        const url = 'http://' + ip + ':7878' + callback + '/' + job.id
+        http.get(url, (res) => {
+            let data = ''
+
+            res.on('data', d => {
+                data += d
+            })
+            res.on('end', () => {
+                // console.log(data)
+            })
+
+            res.on('error', (chunk) => {
+                console.log(chunk);
+            })
+        })
+    }, job_duration)
+
+    return job.id
+}
