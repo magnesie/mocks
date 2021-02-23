@@ -101,7 +101,6 @@ const start_job = (photos, callback, ip) => {
                 break;
             }
         }
-        console.log(jobs);
         const url = 'http://' + ip + ':7878' + callback + '/' + job.id
         http.get(url, (res) => {
             let data = ''

@@ -13,6 +13,7 @@ server.post('/result', (request, response) => {
         let submission_id = request.body['submission_id']
         let result_url = request.body['result_url']
         if (submission_id != null && result_url != null) {
+            console.log('Result received: ' + result_url)
             response.status(200).jsonp()
         } else {
             response.status(404).jsonp()

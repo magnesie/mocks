@@ -35,15 +35,19 @@ casual.register_provider({
     }
 })
 
+let submissions = [];
+
+function generate_submissions() {
+    setTimeout(() => {
+        submissions.push(casual.submission)
+        generate_submissions()
+    }, Math.floor(Math.random() * 10) + 5 * 1000)
+}
+
 server.get('/new_submissions', (request, response) => {
     if (request.method === 'GET') {
-        const submissions = []
-
-        for (let i = 0; i < Math.floor(Math.random() * (5 + 1)); i++) {
-            submissions.push(casual.submission)
-        }
-
-        response.status(200).jsonp(submissions)
+        let new_subs = submissions.filter(submission => submission.status != "Done")
+        response.status(200).jsonp(new_subs)
     }
 })
 
@@ -51,7 +55,14 @@ server.post('/change_submission_status', (request, response) => {
     if (request.method === 'POST') {
         let id = request.body['id']
         let status = request.body['status']
-        if (id != null && id.length > 0 && status != null && status.length > 0 && ['Todo', 'Running', 'Done'].includes(status)) {
+        if (id != null && status != null) {
+            for (const i in submissions) {
+                const s = submissions[i]
+                if (s.id == id) {
+                    s.status = status
+                    console.log('Set status of submission ' + id + ' to ' + status)
+                }
+            }
             response.status(200).jsonp()
         } else {
             response.status(404).jsonp()
@@ -61,4 +72,5 @@ server.post('/change_submission_status', (request, response) => {
 
 server.listen(port, () => {
     console.log('Image storage API mock is running')
+    generate_submissions()
 })
